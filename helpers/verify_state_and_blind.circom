@@ -207,21 +207,9 @@ template CreateStateHasher(num_buckets, num_total) {
 	signal input buckets[num_buckets];
 	signal input object_counts[num_buckets];
 	signal input dates[num_total];
-
-	log(buckets[0]);
-	log(buckets[1]);
-	log(object_counts[0]);
-	log(object_counts[1]);
-	log(dates[0]);
-	log(dates[1]);
-	log(dates[2]);
-	log(dates[3]);
 	
 	signal input serial;
 	signal input password;
-
-	log(serial);
-	log(password);
 	
 	signal output out[256];
 
