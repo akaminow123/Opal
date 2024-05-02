@@ -1,0 +1,171 @@
+
+<style>
+input[type=text], textarea, select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=password], textarea, select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=submit], #gen_pf_submit {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover, #gen_pf_submit:hover {
+  background-color: #45a049;
+}
+
+div {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+  width: 47%;
+  display: inline-block;
+}
+
+form {
+    width: 100%;
+}
+
+textarea {
+    height: 150px;
+}
+
+</style>
+
+<body>
+<div style="float: left">
+
+<!-- Folder name: <input type="text" id="dir" /><br /><br />
+
+File name: <input type="text" id="file" /><br /><br />
+
+Password: <input type="password" id="password" /><br /><br /> -->
+
+Input file: <input type="file" id="inp" onchange="readFile('inp')" /><br /><br />
+
+<button id="gen_pf_submit" onclick="gen_pf()">Generate Proof</button><br /><br />
+
+</div>
+
+<div style="float: right">
+
+<label for="pub">Public JSON: </label><textarea name="pub" id="pub" form="form"></textarea><br /><br />
+
+<label for="proof">Proof JSON: </label><textarea name="proof" id="proof" form="form"></textarea><br /><br />
+
+<form action="/" method="post" id="form" style="display:inline-block;">
+
+<input type="submit" value="Submit" />
+
+</form>
+</div>
+<div>
+</div>
+<div id="file_pass_div">
+    <h1 id="file_pass_label" >Password:</h1>
+    <h3 id="file_pass" ></h3>
+</div>
+</body>
+
+<script src=" https://cdn.jsdelivr.net/npm/snarkjs@0.7.3/build/snarkjs.min.js "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+
+// const password = document.getElementById("password");
+// const dir = document.getElementById("dir");
+// const file = document.getElementById("file");
+const file_pass = document.getElementById("file_pass");
+const file_pass_label = document.getElementById("file_pass_label");
+const update_form = document.getElementById("update_form")
+const pub = document.getElementById("pub");
+const pf = document.getElementById("proof");
+const form = document.getElementById("form");
+
+var input_text;
+
+if ("{{password|safe}}" != ""){
+    Swal.fire({
+        title : "pass: {{password|safe}}\nr: {{r|safe}}\ns_inv: {{s_inv|safe}}"
+  });
+}
+
+if ("{{alert|safe}}" != ""){
+    Swal.fire({
+        title : "{{alert|safe}}"
+    })
+}
+
+// update_form.setAttribute("hidden", "hidden")
+
+// if ("{{password|safe}}" == "") {
+//     file_pass.setAttribute("hidden", "hidden");
+//     file_pass_label.setAttribute("hidden", "hidden");
+// }
+
+
+// const hash = CryptoJS.MD5("{{password|safe}}");
+
+// file_pass.innerText = hash.toString();
+
+function readFile(id) {
+
+    const [file] = document.querySelector("input[id=" + id + "]").files;
+    const reader = new FileReader();
+
+
+    reader.onload = function(e) { 
+        var result = JSON.parse(e.target.result);
+        input_text = result;
+      }
+
+      reader.readAsText(file);
+    }
+
+async function gen_pf() {
+
+    try {
+        
+        const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+            input_text,
+            "verify_state_and_blind.wasm",
+            "verify_state_and_blind_0001.zkey"
+        );
+
+        pub.value = JSON.stringify(publicSignals);
+
+        pf.value = JSON.stringify(proof);
+
+        // form.submit();
+
+    }
+
+    catch {
+        Swal.fire({
+            title: "Your proof did not verify correctly. Please update your proof."
+        })
+    }
+}
+</script>

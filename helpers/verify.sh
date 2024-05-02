@@ -1,0 +1,1 @@
+snarkjs groth16 verify verification_key_"$1".json public_"$1"_"$2".json proof_"$1"_"$2".json
